@@ -1,0 +1,39 @@
+{
+  "clubs": [
+    {
+      "id": "1001",
+      "title": "Gold's Gym",
+      "schedules_id": 10001
+    },
+    {
+      "id": "1002",
+      "title": "hjfuyfj",
+      "schedules_id": 10002
+    }
+  ],
+  "trainers": [
+    {
+      "id": "1",
+      "title": "Arnold Schwarzenegger",
+      "text": "About"
+    }
+  ],
+  "areas": [
+    {
+      "id": "3",
+      "title": "Upper body",
+      "text": "Text..."
+    }
+  ],
+  "schedules": [
+    {
+      "id": "10001",
+      "club_id": 1001,
+      "week": 1,
+      "time_start": "10:30",
+      "time_end": "11:30",
+      "area_id": 3,
+      "trainer_id": 1
+    }
+  ]
+}

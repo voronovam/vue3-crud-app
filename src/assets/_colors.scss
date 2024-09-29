@@ -1,0 +1,16 @@
+:root {
+  --dark-color: #2d2d2d;
+  --light-color: #fdfdfd;
+  --white-color: #ffffff;
+  --success-color: #3ec840;
+  --error-color: #f55f58;
+  --warning-color: #f9bc2e;
+
+  --accent-color: #ff33de;
+  --accent-color-hover: hsl(from var(--accent-color) h s calc(l - 15));
+
+  --info-color: #39a1ee;
+  --info-color-hover: hsl(from var(--info-color) h s calc(l - 15));
+
+  --border-radius: 4px;
+}
