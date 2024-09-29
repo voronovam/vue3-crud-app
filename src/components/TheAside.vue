@@ -30,6 +30,10 @@ import UiLink from '@/components/ui/Link.vue'
 
   &__link {
     text-decoration: none;
+
+    &.router-link-exact-active {
+      color: var(--accent-color);
+    }
   }
 }
 </style>

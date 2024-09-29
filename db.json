@@ -7,7 +7,7 @@
     },
     {
       "id": "1002",
-      "title": "hjfuyfj",
+      "title": "some new club",
       "schedules_id": 10002
     }
   ],
@@ -15,7 +15,15 @@
     {
       "id": "1",
       "title": "Arnold Schwarzenegger",
-      "text": "About"
+      "text": "About text..."
+    },
+    {
+      "id": "2",
+      "title": "Lou Ferrigno"
+    },
+    {
+      "id": "3",
+      "title": "Ralf Moeller"
     }
   ],
   "areas": [

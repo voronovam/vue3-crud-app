@@ -5,7 +5,7 @@ RouterLink.ui-link(:to="$props.to")
 </template>
 
 <script setup lang="ts">
-import type { RouteLocationRaw } from "vue-router"
+import type { RouteLocationRaw } from 'vue-router'
 
 defineProps<{
   to: RouteLocationRaw

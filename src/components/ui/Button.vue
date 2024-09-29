@@ -22,20 +22,36 @@ defineProps<{
   border: 1px solid var(--border-color);
   padding: 4px 8px;
   border-radius: var(--border-radius);
+  transition: color .2s ease;
 
   &._edit {
     color: var(--warning-color);
     border-color: var(--warning-color);
+
+    &:hover, &:focus-visible {
+      color: var(--white-color);
+      background-color: var(--warning-color);
+    }
   }
 
   &._info {
     color: var(--success-color);
     border-color: var(--success-color);
+
+    &:hover, &:focus-visible {
+      color: var(--white-color);
+      background-color: var(--success-color);
+    }
   }
 
   &._delete {
     color: var(--error-color);
     border-color: var(--error-color);
+
+    &:hover, &:focus-visible {
+      color: var(--white-color);
+      background-color: var(--error-color);
+    }
   }
 }
 </style>

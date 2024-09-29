@@ -168,7 +168,6 @@ const handleDeleteClub = async (id: string) => {
           UiButton(:disabled="isEditDisabled" title="Edit Club" look="edit" @click="handleEditClub(club)") Edit
           UiButton(:disabled="isDeleteDisabled" title="Delete Club" look="delete" @click="handleDeleteClub(club.id)") Delete
 
-  pre {{clubs}}
 </template>
 
 <style lang="scss">
@@ -217,7 +216,8 @@ const handleDeleteClub = async (id: string) => {
     padding: 4px 8px;
 
     &:hover, &:focus-visible {
-      color: var(--success-color);
+      color: var(--white-color);
+      background-color: var(--success-color);
     }
   }
 

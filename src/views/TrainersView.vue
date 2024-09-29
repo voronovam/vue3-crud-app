@@ -1,7 +1,234 @@
+<script setup lang="ts">
+import { ref,onMounted } from 'vue';
+import { trainersEndpoint } from '@/constants';
+import UiButton from '@/components/ui/Button.vue'
+import UiLink from '@/components/ui/Link.vue'
+import Spinner from '@/components/Spinner.vue';
+import EditTrainerForm from '@/components/EditTrainerForm.vue';
+import AddTrainerForm from '@/components/AddTrainerForm.vue';
+
+interface Trainer {
+  id: string;
+  title: string;
+  text: string;
+}
+
+const trainers = ref<Trainer[]>([]);
+const isLoading = ref(true);
+const isEditDisabled = ref(false);
+const isDeleteDisabled = ref(false);
+const isShowForm = ref(false);
+const isEditing = ref(false);
+const trainerToEdit = ref<Trainer | null>(null);
+
+const maxId = ref(0);
+
+async function fetchTrainers(url: string) {
+  try {
+    isLoading.value = true;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const data = await response.json();
+    trainers.value = data;
+
+    maxId.value = Math.max(...data.map((trainer: Trainer) => Number(trainer.id)));
+
+  } catch(error) {
+    console.error('Error fetching trainers: ', error)
+  } finally {
+    isLoading.value = false;
+  }
+}
+onMounted(() => fetchTrainers(trainersEndpoint));
+
+const addNewTrainer = async (newTrainer: Trainer) => {
+  try {
+    const response = await fetch(trainersEndpoint, {
+      method: 'POST',
+      body: JSON.stringify(newTrainer),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error adding new trainer');
+    }
+
+    const addedTrainer = await response.json();
+    trainers.value.push(addedTrainer);
+  } catch (error) {
+    console.error('Error adding new trainer:', error);
+  }
+};
+
+const handleEditTrainer = (trainer: Trainer) => {
+  isEditing.value = true;
+  trainerToEdit.value = { ...trainer };
+};
+
+const updateTrainer = async (updated: Trainer) => {
+  try {
+    isEditDisabled.value = true;
+    const response = await fetch(`${trainersEndpoint}/${updated.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updated),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error updating trainer');
+    }
+
+    const index = trainers.value.findIndex((trainer: Trainer) => trainer.id === updated.id);
+    if (index !== -1) {
+      trainers.value[index] = updated;
+    }
+
+    isEditing.value = false;
+    trainerToEdit.value = null;
+  } catch (error) {
+    console.error('Error updating trainer:', error);
+  } finally {
+    isEditDisabled.value = false;
+  }
+};
+
+const handleCancelEdit = () => {
+  isEditing.value = false;
+  trainerToEdit.value = null;
+};
+
+const handleDeleteTrainer = async (id: string) => {
+  const isConfirmed = window.confirm('Delete this trainer?');
+
+  if (!isConfirmed) {
+    return;
+  }
+
+  try {
+    isDeleteDisabled.value = true;
+    const response = await fetch(`${trainersEndpoint}/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Error deleting trainer');
+    }
+
+    trainers.value = trainers.value.filter(trainer => trainer.id !== id);
+  } catch (error) {
+    console.error('Error deleting trainer:', error);
+  } finally {
+    isDeleteDisabled.value = false;
+  }
+};
+
+</script>
+
 <template lang="pug">
-.trainers-view trainers
+.trainers-view
+  Spinner(v-if="isLoading")
+
+  template(v-else)
+    .trainers-view__header
+      h1 Trainers
+
+      UiButton.trainers-view__show-form-btn(
+        @click="isShowForm = !isShowForm"
+      ) Add New Trainer
+
+    AddTrainerForm(
+      v-show="isShowForm"
+      :maxId="maxId"
+      @trainer-added="addNewTrainer"
+    )
+
+    .trainers-view__list
+      .trainers-view__list-item(
+        v-for="trainer in trainers"
+        :key="trainer.id"
+      )
+        .trainers-view__name {{ trainer.id }}. {{ trainer.title }}
+
+        EditTrainerForm(
+          v-if="trainerToEdit && trainerToEdit.id === trainer.id"
+          :trainer="trainerToEdit"
+          @trainer-updated="updateTrainer"
+          @cancelEdit="handleCancelEdit"
+        )
+
+        .trainers-view__actions
+          UiLink.trainers-view__actions-view(title="View Trainer" :to="{ name: 'trainer-detail', params: { id: trainer.id } }") View
+          UiButton(:disabled="isEditDisabled" title="Edit Trainer" look="edit" @click="handleEditTrainer(trainer)") Edit
+          UiButton(:disabled="isDeleteDisabled" title="Delete Trainer" look="delete" @click="handleDeleteTrainer(trainer.id)") Delete
+
 </template>
 
 <style lang="scss">
+.trainers-view {
+  padding: 24px;
 
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    grid-gap: 8px;
+    margin-top: 24px;
+  }
+
+  &__name {
+    font-size: 22px;
+  }
+
+  &__list-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+  }
+
+  &__actions {
+    display: flex;
+    grid-gap: 8px;
+  }
+
+  &__actions-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--success-color);
+    color: var(--success-color);
+    padding: 4px 8px;
+
+    &:hover, &:focus-visible {
+      color: var(--white-color);
+      background-color: var(--success-color);
+    }
+  }
+
+  &__show-form-btn {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    padding: 12px 18px;
+    border-radius: var(--border-radius);
+    transition: background-color .1s ease;
+
+    &:hover, &:focus-visible {
+      background-color: var(--accent-color);
+      color: var(--white-color);
+    }
+  }
+}
 </style>
