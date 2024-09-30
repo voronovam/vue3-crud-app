@@ -52,11 +52,12 @@ const submitForm = () => {
   &__btn {
     padding: 8px;
     border-radius: var(--border-radius);
-    background-color: var(--accent-color);
+    background-color: var(--info-color);
+    border-color: var(--info-color);
     color: var(--light-color);
 
     &:hover, &:focus-visible {
-      background-color: var(--accent-color-hover);
+      background-color: var(--info-color-hover);
     }
   }
 }
