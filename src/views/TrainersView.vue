@@ -6,6 +6,7 @@ import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
 import EditTrainerForm from '@/components/EditTrainerForm.vue';
 import AddTrainerForm from '@/components/AddTrainerForm.vue';
+import UiModal from "@/components/ui/Modal.vue";
 
 interface Trainer {
   id: string;
@@ -142,7 +143,7 @@ const handleDeleteTrainer = async (id: string) => {
 
     AddTrainerForm(
       v-show="isShowForm"
-      :maxId="maxId"
+      :max-id="maxId"
       @trainer-added="addNewTrainer"
     )
 
@@ -153,17 +154,29 @@ const handleDeleteTrainer = async (id: string) => {
       )
         .trainers-view__name {{ trainer.id }}. {{ trainer.title }}
 
-        EditTrainerForm(
-          v-if="trainerToEdit && trainerToEdit.id === trainer.id"
-          :trainer="trainerToEdit"
-          @trainer-updated="updateTrainer"
-          @cancelEdit="handleCancelEdit"
-        )
-
         .trainers-view__actions
           UiLink.trainers-view__actions-view(title="View Trainer" :to="{ name: 'trainer-detail', params: { id: trainer.id } }") View
-          UiButton(:disabled="isEditDisabled" title="Edit Trainer" look="edit" @click="handleEditTrainer(trainer)") Edit
+          UiButton(
+            :disabled="isEditDisabled"
+            title="Edit Trainer"
+            look="edit"
+            popovertarget="popover"
+            popovertargetaction="toggle"
+            @click="handleEditTrainer(trainer)"
+          ) Edit
           UiButton(:disabled="isDeleteDisabled" title="Delete Trainer" look="delete" @click="handleDeleteTrainer(trainer.id)") Delete
+
+        UiModal#popover(
+          v-if="trainerToEdit && trainerToEdit.id === trainer.id"
+          popover
+        )
+          h2.clubs-view__modal-title Editing: {{trainer.title}}
+
+          EditTrainerForm(
+            :trainer="trainerToEdit"
+            @trainer-updated="updateTrainer"
+            @cancelEdit="handleCancelEdit"
+          )
 
 </template>
 
@@ -190,16 +203,28 @@ const handleDeleteTrainer = async (id: string) => {
 
   &__list-item {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: column;
     padding: 16px 8px;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
+
+    @include mobile-landscape {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
   }
 
   &__actions {
     display: flex;
     grid-gap: 8px;
+    margin-top: 16px;
+    justify-content: flex-end;
+
+    @include mobile-landscape {
+      margin-top: unset;
+      justify-content: unset;
+    }
   }
 
   &__actions-view {
@@ -219,14 +244,14 @@ const handleDeleteTrainer = async (id: string) => {
   }
 
   &__show-form-btn {
-    color: var(--accent-color);
-    border-color: var(--accent-color);
+    color: var(--info-color);
+    border-color: var(--info-color);
     padding: 12px 18px;
     border-radius: var(--border-radius);
     transition: background-color .1s ease;
 
     &:hover, &:focus-visible {
-      background-color: var(--accent-color);
+      background-color: var(--info-color-hover);
       color: var(--white-color);
     }
   }

@@ -2,7 +2,7 @@
 .trainer-detail-view
   h1.trainer-detail-view__title {{ trainer.title }}
   p ID: {{ trainer.id }}
-  p  {{ trainer.text }}
+  p {{ trainer.text }}
 
 </template>
 

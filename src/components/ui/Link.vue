@@ -20,7 +20,7 @@ defineProps<{
 
   &:hover,
   &:focus-visible {
-    color: var(--accent-color);
+    color: var(--info-color);
   }
 }
 </style>

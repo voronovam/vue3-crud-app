@@ -1,15 +1,15 @@
 <template lang="pug">
-.edit-trainer-form
+.edit-area-form
   form(@submit.prevent="submitForm")
-    .edit-trainer-form__fields
+    .edit-area-form__fields
       div
-        label.edit-trainer-form__label Name
-        input.edit-trainer-form__field(type="text" v-model="editableTrainer.title" placeholder="Trainer name" required)
+        label.edit-area-form__label Name
+        input.edit-area-form__field(type="text" v-model="editableArea.title" placeholder="Area name" required)
       div
-        label.edit-trainer-form__label Description
-        textarea.edit-trainer-form__field(v-model="editableTrainer.text")
+        label.edit-area-form__label Description
+        textarea.edit-area-form__field(v-model="editableArea.text")
 
-    .edit-trainer-form__actions
+    .edit-area-form__actions
       UiButton(type="submit" look="info") Save
       UiButton(@click="cancelEdit" look="inline") Cancel
 
@@ -20,25 +20,25 @@ import { ref, watch } from 'vue';
 import UiButton from '@/components/ui/Button.vue';
 
 const props = defineProps<{
-  trainer: { id: string; title: string; text: string }
+  area: { id: string; title: string; text: string }
 }>();
 
-const mockTrainer = {
+const defaultArea = {
   id: '',
   title: '',
   text: '',
 };
 
-const emit = defineEmits(['trainerUpdated', 'cancelEdit']);
+const emit = defineEmits(['areaUpdated', 'cancelEdit']);
 
-const editableTrainer = ref({ ...props.trainer || mockTrainer });
+const editableArea = ref({ ...props.area || defaultArea });
 
-watch(() => props.trainer, (newTrainer) => {
-  editableTrainer.value = { ...newTrainer };
+watch(() => props.area, (newArea) => {
+  editableArea.value = { ...newArea };
 });
 
 const submitForm = () => {
-  emit('trainerUpdated', editableTrainer.value);
+  emit('areaUpdated', editableArea.value);
 };
 
 const cancelEdit = () => {
@@ -47,7 +47,7 @@ const cancelEdit = () => {
 </script>
 
 <style lang="scss">
-.edit-trainer-form {
+.edit-area-form {
   &__fields {
     display: flex;
     flex-direction: column;

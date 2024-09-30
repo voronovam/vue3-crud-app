@@ -1,9 +1,12 @@
 <template lang="pug">
 .edit-club-form
   form(@submit.prevent="submitForm")
-    input(type="text" v-model="editableClub.title" placeholder="Club name" required)
-    UiButton(type="submit") Save
-    UiButton(@click="cancelEdit") Cancel
+    label.edit-club-form__label Name
+    input.edit-club-form__field(type="text" v-model="editableClub.title" placeholder="Club name" required)
+
+    .edit-club-form__actions
+      UiButton(type="submit" look="info") Save
+      UiButton(@click="cancelEdit" look="inline") Cancel
 
 </template>
 
@@ -39,5 +42,23 @@ const cancelEdit = () => {
 </script>
 
 <style lang="scss">
+.edit-club-form {
+  &__label {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+  }
 
+  &__field {
+    width: 100%;
+    padding: 8px 4px;
+  }
+
+  &__actions {
+    display: flex;
+    grid-gap: 12px;
+    margin-top: 16px;
+    justify-content: flex-end;
+  }
+}
 </style>

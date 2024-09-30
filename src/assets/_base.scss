@@ -50,14 +50,21 @@ li {
 }
 }
 
-::placeholder,
 button,
 input,
+textarea,
 select {
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
   color: var(--dark-color);
+}
+
+::placeholder {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: var(--placeholder-color);
 }
 
 button {

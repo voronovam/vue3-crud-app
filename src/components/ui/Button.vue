@@ -53,5 +53,13 @@ defineProps<{
       background-color: var(--error-color);
     }
   }
+
+  &._inline {
+    border-color: transparent;
+
+    &:hover, &:focus-visible {
+      text-decoration: underline;
+    }
+  }
 }
 </style>

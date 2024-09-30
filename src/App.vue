@@ -39,14 +39,21 @@ onUnmounted(() => {
 
 <style lang="scss">
 .page {
+  max-width: 900px;
+  margin-right: auto;
+  margin-left: auto;
   min-height: 100vh;
   display: grid;
   grid-template-rows: max-content 1fr max-content;
   grid-template-columns: 100%;
+  border-right: 1px solid var(--border-color);
+  border-left: 1px solid var(--border-color);
 
   &__main {
-    display: grid;
-    grid-template-columns:  320px minmax(0, 1fr);
+    @include tablet {
+      display: grid;
+      grid-template-columns:  200px minmax(0, 1fr);
+    }
   }
 }
 </style>

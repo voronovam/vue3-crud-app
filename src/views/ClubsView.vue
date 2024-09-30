@@ -6,6 +6,7 @@ import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
 import AddClubForm from '@/components/AddClubForm.vue';
 import EditClubForm from '@/components/EditClubForm.vue';
+import UiModal from "@/components/ui/Modal.vue";
 
 interface Club {
   id: string;
@@ -144,7 +145,7 @@ const handleDeleteClub = async (id: string) => {
 
     AddClubForm(
       v-show="isShowForm"
-      :maxId="maxId"
+      :max-id="maxId"
       :maxSchedulesId="maxSchedulesId"
       @clubAdded="addNewClub"
     )
@@ -156,17 +157,29 @@ const handleDeleteClub = async (id: string) => {
       )
         .clubs-view__name {{ club.id }}. {{ club.title }}
 
-        EditClubForm(
-          v-if="clubToEdit && clubToEdit.id === club.id"
-          :club="clubToEdit"
-          @clubUpdated="updateClub"
-          @cancelEdit="handleCancelEdit"
-        )
-
         .clubs-view__actions
           UiLink.clubs-view__actions-view(title="View Club" :to="{ name: 'club-detail', params: { id: club.id } }") View
-          UiButton(:disabled="isEditDisabled" title="Edit Club" look="edit" @click="handleEditClub(club)") Edit
+          UiButton(
+            :disabled="isEditDisabled"
+            title="Edit Club"
+            look="edit"
+            popovertarget="popover"
+            popovertargetaction="toggle"
+            @click="handleEditClub(club)"
+          ) Edit
           UiButton(:disabled="isDeleteDisabled" title="Delete Club" look="delete" @click="handleDeleteClub(club.id)") Delete
+
+        UiModal#popover(
+          v-if="clubToEdit && clubToEdit.id === club.id"
+          popover
+        )
+          h2.clubs-view__modal-title Editing: {{club.title}}
+
+          EditClubForm(
+            :club="clubToEdit"
+            @clubUpdated="updateClub"
+            @cancelEdit="handleCancelEdit"
+          )
 
 </template>
 
@@ -193,16 +206,28 @@ const handleDeleteClub = async (id: string) => {
 
   &__list-item {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: column;
     padding: 16px 8px;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
+
+    @include mobile-landscape {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
   }
 
   &__actions {
     display: flex;
     grid-gap: 8px;
+    margin-top: 16px;
+    justify-content: flex-end;
+
+    @include mobile-landscape {
+      margin-top: unset;
+      justify-content: unset;
+    }
   }
 
   &__actions-view {
@@ -222,16 +247,21 @@ const handleDeleteClub = async (id: string) => {
   }
 
   &__show-form-btn {
-    color: var(--accent-color);
-    border-color: var(--accent-color);
+    color: var(--info-color);
+    border-color: var(--info-color);
     padding: 12px 18px;
     border-radius: var(--border-radius);
     transition: background-color .1s ease;
 
     &:hover, &:focus-visible {
-      background-color: var(--accent-color);
+      background-color: var(--info-color-hover);
       color: var(--white-color);
     }
+  }
+
+  &__modal-title {
+    color: var(--text-color);
+    margin-bottom: 16px;
   }
 }
 </style>

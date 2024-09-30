@@ -23,14 +23,29 @@
     },
     {
       "id": "3",
-      "title": "Ralf Moeller"
+      "title": "Ralf Moeller",
+      "text": "some description"
+    },
+    {
+      "id": "4",
+      "title": "new trainer"
     }
   ],
   "areas": [
     {
       "id": "3",
       "title": "Upper body",
-      "text": "Text..."
+      "text": "Text description"
+    },
+    {
+      "id": "4",
+      "title": "Arms",
+      "text": "Arms workout\n"
+    },
+    {
+      "id": "5",
+      "title": "Leg",
+      "text": "Leg workout"
     }
   ],
   "schedules": [
