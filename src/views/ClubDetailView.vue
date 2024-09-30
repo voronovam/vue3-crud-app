@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { clubsEndpoint, schedulesEndpoint, areasEndpoint, trainersEndpoint } from '@/constants'
+import { clubsEndpoint, schedulesEndpoint, areasEndpoint, trainersEndpoint, daysOfWeek } from '@/constants'
 import UiLink from '@/components/ui/Link.vue'
+import UiButton from '@/components/ui/Button.vue'
+import UiModal from '@/components/ui/Modal.vue'
+import AddScheduleForm from '@/components/AddScheduleForm.vue'
 
 const route = useRoute();
 const club = ref({ id: '', title: '', schedules_id: 0 });
 const schedules = ref([]);
 const areas = ref([]);
 const trainers = ref([]);
-const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const isShowForm = ref(false);
 const weekDayMap = {
   mon: 1,
   tue: 2,
@@ -34,8 +37,9 @@ onMounted(async () => {
 
   const trainersResponse = await fetch(trainersEndpoint);
   trainers.value = await trainersResponse.json();
-
+  schedules.value.sort((a, b) => a.time_start.localeCompare(b.time_start));
   uniqueTimes.value = [...new Set(schedules.value.map(schedule => schedule.time_start))];
+
 });
 
 function getAreaTitle(time: string, day: string): string | null {
@@ -59,13 +63,68 @@ function getTrainerName(time: string, day: string): string | null {
   }
   return null;
 }
+
+const addNewSchedule = async (newSchedule) => {
+  try {
+    newSchedule.club_id = Number(club.value.id);
+
+    const maxId = Math.max(...schedules.value.map(schedule => Number(schedule.id)), 0);
+    newSchedule.id = (maxId + 1).toString();
+
+    const response = await fetch(schedulesEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newSchedule),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error added schedule');
+    }
+
+    const addedSchedule = await response.json();
+
+    addedSchedule.club_id = Number(addedSchedule.club_id);
+    addedSchedule.week = Number(addedSchedule.week);
+    addedSchedule.area_id = Number(addedSchedule.area_id);
+    addedSchedule.trainer_id = Number(addedSchedule.trainer_id);
+
+    schedules.value.push(addedSchedule);
+    isShowForm.value = false;
+
+    schedules.value.sort((a, b) => a.time_start.localeCompare(b.time_start));
+    uniqueTimes.value = [...new Set(schedules.value.map(schedule => schedule.time_start))];
+  } catch (error) {
+    console.error('Error added schedule:', error);
+  }
+};
+
 </script>
 
 <template lang="pug">
 .club-detail-view
   UiLink.club-detail-view__back-btn(to="/") ←
 
-  h1.club-detail-view__title {{ club.title }}
+  .club-detail-view__head
+    h1 {{ club.title }}
+
+    UiButton.club-detail-view__show-form-btn(
+      popovertarget="popover"
+      popovertargetaction="toggle"
+      @click="isShowForm = !isShowForm"
+    ) Add Schedule
+
+    UiModal#popover(
+      v-show="isShowForm"
+      popover
+    )
+      h2.club-detail-view__modal-title Add Schedule
+
+      AddScheduleForm(
+        :areas="areas"
+        :trainers="trainers"
+        :schedules="schedules"
+        @scheduleAdded="addNewSchedule"
+      )
 
   table.club-detail-view__schedule
     thead
@@ -97,7 +156,9 @@ function getTrainerName(time: string, day: string): string | null {
     margin-bottom: 16px;
   }
 
-  &__title {
+  &__head {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 24px;
   }
 
@@ -111,6 +172,24 @@ function getTrainerName(time: string, day: string): string | null {
       padding: 8px;
       text-align: center;
     }
+  }
+
+  &__show-form-btn {
+    color: var(--info-color);
+    border-color: var(--info-color);
+    padding: 12px 18px;
+    border-radius: var(--border-radius);
+    transition: background-color .1s ease;
+
+    &:hover, &:focus-visible {
+      background-color: var(--info-color-hover);
+      color: var(--white-color);
+    }
+  }
+
+  &__modal-title {
+    color: var(--text-color);
+    margin-bottom: 24px;
   }
 }
 </style>

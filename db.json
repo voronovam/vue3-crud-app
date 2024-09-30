@@ -9,6 +9,21 @@
       "id": "1002",
       "title": "some new club",
       "schedules_id": 10002
+    },
+    {
+      "id": "1003",
+      "title": "X Fit",
+      "schedules_id": 10003
+    },
+    {
+      "id": "1004",
+      "title": "Extreme Fitness",
+      "schedules_id": 10004
+    },
+    {
+      "id": "1005",
+      "title": "World Class",
+      "schedules_id": 10005
     }
   ],
   "trainers": [
@@ -40,12 +55,16 @@
     {
       "id": "4",
       "title": "Arms",
-      "text": "Arms workout\n"
+      "text": "Arms workout"
     },
     {
       "id": "5",
       "title": "Leg",
       "text": "Leg workout"
+    },
+    {
+      "id": "6",
+      "title": "yoga"
     }
   ],
   "schedules": [
@@ -57,6 +76,15 @@
       "time_end": "11:30",
       "area_id": 3,
       "trainer_id": 1
+    },
+    {
+      "id": "1",
+      "club_id": 1003,
+      "week": 1,
+      "time_start": "10:00",
+      "time_end": "11:00",
+      "area_id": 3,
+      "trainer_id": 2
     }
   ]
 }
