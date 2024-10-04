@@ -2,6 +2,7 @@
 import { ref,onMounted } from 'vue';
 import { areasEndpoint } from '@/constants';
 import { useFetchData } from '@/composables/useFetchData';
+import { useDeleteItem } from '@/composables/useDeleteItem';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
@@ -17,7 +18,7 @@ export interface Area {
 
 const areas = ref<Area[]>([]);
 const isEditDisabled = ref(false);
-const isDeleteDisabled = ref(false);
+
 const isShowForm = ref(false);
 const isEditing = ref(false);
 const areaToEdit = ref<Area | null>(null);
@@ -91,29 +92,12 @@ const handleCancelEdit = () => {
   areaToEdit.value = null;
 };
 
+const {
+  deleteItem: deleteArea, isDeleteDisabled, error: errorDeleteItem
+} = useDeleteItem<Area>(areasEndpoint, areas);
+
 const handleDeleteArea = async (id: string) => {
-  const isConfirmed = window.confirm('Delete this area?');
-
-  if (!isConfirmed) {
-    return;
-  }
-
-  try {
-    isDeleteDisabled.value = true;
-    const response = await fetch(`${areasEndpoint}/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      throw new Error('Error deleting area');
-    }
-
-    areas.value = areas.value.filter(area => area.id !== id);
-  } catch (error) {
-    console.error('Error deleting area:', error);
-  } finally {
-    isDeleteDisabled.value = false;
-  }
+  await deleteArea(id);
 };
 
 </script>

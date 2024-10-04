@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref,onMounted } from 'vue';
 import { useFetchData } from '@/composables/useFetchData';
+import { useDeleteItem } from '@/composables/useDeleteItem';
 import { clubsEndpoint } from '@/constants';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
@@ -17,13 +18,13 @@ interface Club {
 
 const clubs = ref<Club[]>([]);
 const isEditDisabled = ref(false);
-const isDeleteDisabled = ref(false);
 const isShowForm = ref(false);
 const isEditing = ref(false);
 const clubToEdit = ref<Club | null>(null);
 
+//TODO show fetch error message
 const {
-  data: clubsData, error, isLoading: isClubsLoading, maxId, maxSchedulesId, fetchData
+  data: clubsData, error: errorFetchData, isLoading: isClubsLoading, maxId, maxSchedulesId, fetchData
 } = useFetchData<Club>(clubsEndpoint);
 
 onMounted(async () => {
@@ -91,29 +92,11 @@ const handleCancelEdit = () => {
   clubToEdit.value = null;
 };
 
+//TODO show delete error message
+const { deleteItem: deleteClub, isDeleteDisabled, error: errorDeleteItem } = useDeleteItem<Club>(clubsEndpoint, clubs);
+
 const handleDeleteClub = async (id: string) => {
-  const isConfirmed = window.confirm('Delete this club?');
-
-  if (!isConfirmed) {
-    return;
-  }
-
-  try {
-    isDeleteDisabled.value = true;
-    const response = await fetch(`${clubsEndpoint}/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      throw new Error('Error deleting club');
-    }
-
-    clubs.value = clubs.value.filter(club => club.id !== id);
-  } catch (error) {
-    console.error('Error deleting club:', error);
-  } finally {
-    isDeleteDisabled.value = false;
-  }
+  await deleteClub(id);
 };
 
 </script>

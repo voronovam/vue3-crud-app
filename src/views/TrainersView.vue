@@ -2,6 +2,7 @@
 import { ref,onMounted } from 'vue';
 import { trainersEndpoint } from '@/constants';
 import { useFetchData } from '@/composables/useFetchData';
+import { useDeleteItem } from '@/composables/useDeleteItem';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
@@ -17,7 +18,7 @@ interface Trainer {
 
 const trainers = ref<Trainer[]>([]);
 const isEditDisabled = ref(false);
-const isDeleteDisabled = ref(false);
+
 const isShowForm = ref(false);
 const isEditing = ref(false);
 const trainerToEdit = ref<Trainer | null>(null);
@@ -92,29 +93,12 @@ const handleCancelEdit = () => {
   trainerToEdit.value = null;
 };
 
+const {
+  deleteItem: deleteTrainer, isDeleteDisabled, error: errorDeleteItem
+} = useDeleteItem<Trainer>(trainersEndpoint, trainers);
+
 const handleDeleteTrainer = async (id: string) => {
-  const isConfirmed = window.confirm('Delete this trainer?');
-
-  if (!isConfirmed) {
-    return;
-  }
-
-  try {
-    isDeleteDisabled.value = true;
-    const response = await fetch(`${trainersEndpoint}/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      throw new Error('Error deleting trainer');
-    }
-
-    trainers.value = trainers.value.filter(trainer => trainer.id !== id);
-  } catch (error) {
-    console.error('Error deleting trainer:', error);
-  } finally {
-    isDeleteDisabled.value = false;
-  }
+  await deleteTrainer(id);
 };
 
 </script>

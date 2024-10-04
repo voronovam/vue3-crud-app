@@ -6,11 +6,6 @@
       "schedules_id": 10001
     },
     {
-      "id": "1002",
-      "title": "some new club",
-      "schedules_id": 10002
-    },
-    {
       "id": "1003",
       "title": "X Fit",
       "schedules_id": 10003
@@ -40,10 +35,6 @@
       "id": "3",
       "title": "Ralf Moeller",
       "text": "some description"
-    },
-    {
-      "id": "4",
-      "title": "new trainer"
     }
   ],
   "areas": [
@@ -61,10 +52,6 @@
       "id": "5",
       "title": "Leg",
       "text": "Leg workout"
-    },
-    {
-      "id": "6",
-      "title": "yoga"
     }
   ],
   "schedules": [
