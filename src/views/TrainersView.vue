@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref,onMounted } from 'vue';
 import { trainersEndpoint } from '@/constants';
+import { useFetchData } from '@/composables/useFetchData';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
@@ -15,35 +16,24 @@ interface Trainer {
 }
 
 const trainers = ref<Trainer[]>([]);
-const isLoading = ref(true);
 const isEditDisabled = ref(false);
 const isDeleteDisabled = ref(false);
 const isShowForm = ref(false);
 const isEditing = ref(false);
 const trainerToEdit = ref<Trainer | null>(null);
 
-const maxId = ref(0);
+const {
+  data: trainersData, error, isLoading: isTrainersLoading, maxId, fetchData
+} = useFetchData<Trainer>(trainersEndpoint);
 
-async function fetchTrainers(url: string) {
-  try {
-    isLoading.value = true;
-    const response = await fetch(url);
+onMounted(async () => {
+  await fetchData();
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
-    trainers.value = data;
-
-    maxId.value = Math.max(...data.map((trainer: Trainer) => Number(trainer.id)));
-
-  } catch(error) {
-    console.error('Error fetching trainers: ', error)
-  } finally {
-    isLoading.value = false;
+  if (trainersData.value) {
+    trainers.value = trainersData.value;
   }
-}
-onMounted(() => fetchTrainers(trainersEndpoint));
+});
+
 
 const addNewTrainer = async (newTrainer: Trainer) => {
   try {
@@ -131,7 +121,7 @@ const handleDeleteTrainer = async (id: string) => {
 
 <template lang="pug">
 .trainers-view
-  Spinner(v-if="isLoading")
+  Spinner(v-if="isTrainersLoading")
 
   template(v-else)
     .trainers-view__header

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref,onMounted } from 'vue';
 import { areasEndpoint } from '@/constants';
+import { useFetchData } from '@/composables/useFetchData';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
@@ -15,35 +16,23 @@ export interface Area {
 }
 
 const areas = ref<Area[]>([]);
-const isLoading = ref(true);
 const isEditDisabled = ref(false);
 const isDeleteDisabled = ref(false);
 const isShowForm = ref(false);
 const isEditing = ref(false);
 const areaToEdit = ref<Area | null>(null);
 
-const maxId = ref(0);
+const {
+  data: areasData, error, isLoading: isAreasLoading, maxId, fetchData
+} = useFetchData<Area>(areasEndpoint);
 
-async function fetchAreas(url: string) {
-  try {
-    isLoading.value = true;
-    const response = await fetch(url);
+onMounted(async () => {
+  await fetchData();
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
-    areas.value = data;
-
-    maxId.value = Math.max(...data.map((area: Area) => Number(area.id)));
-
-  } catch(error) {
-    console.error('Error fetching areas: ', error)
-  } finally {
-    isLoading.value = false;
+  if (areasData.value) {
+    areas.value = areasData.value;
   }
-}
-onMounted(() => fetchAreas(areasEndpoint));
+});
 
 const addNewArea = async (newArea: Area) => {
   try {
@@ -131,7 +120,7 @@ const handleDeleteArea = async (id: string) => {
 
 <template lang="pug">
 .areas-view
-  Spinner(v-if="isLoading")
+  Spinner(v-if="isAreasLoading")
 
   template(v-else)
     .areas-view__header

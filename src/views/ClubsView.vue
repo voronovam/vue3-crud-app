@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref,onMounted } from 'vue';
+import { useFetchData } from '@/composables/useFetchData';
 import { clubsEndpoint } from '@/constants';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
@@ -15,37 +16,23 @@ interface Club {
 }
 
 const clubs = ref<Club[]>([]);
-const isLoading = ref(true);
 const isEditDisabled = ref(false);
 const isDeleteDisabled = ref(false);
 const isShowForm = ref(false);
 const isEditing = ref(false);
 const clubToEdit = ref<Club | null>(null);
 
-const maxId = ref(0);
-const maxSchedulesId = ref(0);
+const {
+  data: clubsData, error, isLoading: isClubsLoading, maxId, maxSchedulesId, fetchData
+} = useFetchData<Club>(clubsEndpoint);
 
-async function fetchClubs(url: string) {
-  try {
-    isLoading.value = true;
-    const response = await fetch(url);
+onMounted(async () => {
+  await fetchData();
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
-    clubs.value = data;
-
-    maxId.value = Math.max(...data.map((club: Club) => Number(club.id)));
-    maxSchedulesId.value = Math.max(...data.map((club: Club) => club.schedules_id));
-
-  } catch(error) {
-    console.error('Error fetching clubs: ', error)
-  } finally {
-    isLoading.value = false;
+  if (clubsData.value) {
+    clubs.value = clubsData.value;
   }
-}
-onMounted(() => fetchClubs(clubsEndpoint));
+});
 
 const addNewClub = async (newClub: Club) => {
   try {
@@ -133,7 +120,7 @@ const handleDeleteClub = async (id: string) => {
 
 <template lang="pug">
 .clubs-view
-  Spinner(v-if="isLoading")
+  Spinner(v-if="isClubsLoading")
 
   template(v-else)
     .clubs-view__header
