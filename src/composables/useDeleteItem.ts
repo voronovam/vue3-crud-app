@@ -1,7 +1,11 @@
 import { ref } from 'vue';
 import type { Ref } from 'vue';
 
-export function useDeleteItem<T>(url: string, items: Ref<T[]>) {
+interface HasId {
+    id: string;
+}
+
+export function useDeleteItem<T extends HasId>(url: string, items: Ref<T[]>) {
     const isDeleteDisabled = ref(false);
     const error = ref<string | null>(null);
 
@@ -19,7 +23,7 @@ export function useDeleteItem<T>(url: string, items: Ref<T[]>) {
             });
 
             if (!response.ok) {
-                throw new Error('Error deleting item');
+                throw new Error(`Error deleting item from ${url}`);
             }
 
             items.value = items.value.filter(item => item.id !== id);

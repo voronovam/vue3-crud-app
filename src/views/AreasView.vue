@@ -2,6 +2,7 @@
 import { ref,onMounted } from 'vue';
 import { areasEndpoint } from '@/constants';
 import { useFetchData } from '@/composables/useFetchData';
+import { useCreateItem } from '@/composables/useCreateItem';
 import { useDeleteItem } from '@/composables/useDeleteItem';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
@@ -35,22 +36,12 @@ onMounted(async () => {
   }
 });
 
-const addNewArea = async (newArea: Area) => {
-  try {
-    const response = await fetch(areasEndpoint, {
-      method: 'POST',
-      body: JSON.stringify(newArea),
-    });
+const { isLoading: isCreateItemLoading, createItem: addNewArea } = useCreateItem<Area>(areasEndpoint);
 
-    if (!response.ok) {
-      throw new Error('Error adding new area');
-    }
-
-    const addedArea = await response.json();
-    areas.value.push(addedArea);
-  } catch (error) {
-    console.error('Error adding new area:', error);
-  }
+const handleAddArea = async (newItem: Area) => {
+  await addNewArea(newItem, (addedItem: Area) => {
+    areas.value.push(addedItem);
+  });
 };
 
 const handleEditArea = (area: Area) => {
@@ -117,7 +108,7 @@ const handleDeleteArea = async (id: string) => {
     AddAreaForm(
       v-show="isShowForm"
       :max-id="maxId"
-      @area-added="addNewArea"
+      @area-added="handleAddArea"
     )
 
     .areas-view__list

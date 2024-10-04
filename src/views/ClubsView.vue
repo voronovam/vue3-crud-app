@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref,onMounted } from 'vue';
-import { useFetchData } from '@/composables/useFetchData';
-import { useDeleteItem } from '@/composables/useDeleteItem';
 import { clubsEndpoint } from '@/constants';
+import { useFetchData } from '@/composables/useFetchData';
+import { useCreateItem } from '@/composables/useCreateItem';
+import { useDeleteItem } from '@/composables/useDeleteItem';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
@@ -35,22 +36,12 @@ onMounted(async () => {
   }
 });
 
-const addNewClub = async (newClub: Club) => {
-  try {
-    const response = await fetch(clubsEndpoint, {
-      method: 'POST',
-      body: JSON.stringify(newClub),
-    });
+const { isLoading: isCreateItemLoading, createItem: addNewClub } = useCreateItem<Club>(clubsEndpoint);
 
-    if (!response.ok) {
-      throw new Error('Error adding new club');
-    }
-
-    const addedClub = await response.json();
+const handleAddClub = async (newClub: Club) => {
+  await addNewClub(newClub, (addedClub: Club) => {
     clubs.value.push(addedClub);
-  } catch (error) {
-    console.error('Error adding new club:', error);
-  }
+  });
 };
 
 const handleEditClub = (club: Club) => {
@@ -117,7 +108,7 @@ const handleDeleteClub = async (id: string) => {
       v-show="isShowForm"
       :max-id="maxId"
       :maxSchedulesId="maxSchedulesId"
-      @clubAdded="addNewClub"
+      @clubAdded="handleAddClub"
     )
 
     .clubs-view__list
@@ -128,7 +119,11 @@ const handleDeleteClub = async (id: string) => {
         .clubs-view__name {{ club.id }}. {{ club.title }}
 
         .clubs-view__actions
-          UiLink.clubs-view__actions-view(title="View Club" :to="{ name: 'club-detail', params: { id: club.id } }") View
+          UiLink.clubs-view__actions-view(
+            title="View Club"
+            :to="{ name: 'club-detail', params: { id: club.id } }"
+          ) View
+
           UiButton(
             :disabled="isEditDisabled"
             title="Edit Club"
@@ -137,7 +132,13 @@ const handleDeleteClub = async (id: string) => {
             popovertargetaction="toggle"
             @click="handleEditClub(club)"
           ) Edit
-          UiButton(:disabled="isDeleteDisabled" title="Delete Club" look="delete" @click="handleDeleteClub(club.id)") Delete
+
+          UiButton(
+            :disabled="isDeleteDisabled"
+            title="Delete Club"
+            look="delete"
+            @click="handleDeleteClub(club.id)"
+          ) Delete
 
         UiModal#popover(
           v-if="clubToEdit && clubToEdit.id === club.id"

@@ -2,6 +2,7 @@
 import { ref,onMounted } from 'vue';
 import { trainersEndpoint } from '@/constants';
 import { useFetchData } from '@/composables/useFetchData';
+import { useCreateItem } from '@/composables/useCreateItem';
 import { useDeleteItem } from '@/composables/useDeleteItem';
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
@@ -35,23 +36,12 @@ onMounted(async () => {
   }
 });
 
+const { isLoading: isCreateItemLoading, createItem: addNewTrainer } = useCreateItem<Trainer>(trainersEndpoint);
 
-const addNewTrainer = async (newTrainer: Trainer) => {
-  try {
-    const response = await fetch(trainersEndpoint, {
-      method: 'POST',
-      body: JSON.stringify(newTrainer),
-    });
-
-    if (!response.ok) {
-      throw new Error('Error adding new trainer');
-    }
-
-    const addedTrainer = await response.json();
-    trainers.value.push(addedTrainer);
-  } catch (error) {
-    console.error('Error adding new trainer:', error);
-  }
+const handleAddTrainer = async (newItem: Trainer) => {
+  await addNewTrainer(newItem, (addedItem: Trainer) => {
+    trainers.value.push(addedItem);
+  });
 };
 
 const handleEditTrainer = (trainer: Trainer) => {
@@ -118,7 +108,7 @@ const handleDeleteTrainer = async (id: string) => {
     AddTrainerForm(
       v-show="isShowForm"
       :max-id="maxId"
-      @trainer-added="addNewTrainer"
+      @trainer-added="handleAddTrainer"
     )
 
     .trainers-view__list
@@ -144,7 +134,7 @@ const handleDeleteTrainer = async (id: string) => {
           v-if="trainerToEdit && trainerToEdit.id === trainer.id"
           popover
         )
-          h2.clubs-view__modal-title Editing: {{trainer.title}}
+          h2.trainers-view__modal-title Editing: {{trainer.title}}
 
           EditTrainerForm(
             :trainer="trainerToEdit"
