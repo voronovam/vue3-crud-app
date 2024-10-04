@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref,onMounted } from 'vue';
+
 import { trainersEndpoint } from '@/constants';
 import { useFetchData } from '@/composables/useFetchData';
 import { useCreateItem } from '@/composables/useCreateItem';
+import { useUpdateItem } from '@/composables/useUpdateItem';
 import { useDeleteItem } from '@/composables/useDeleteItem';
+
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
@@ -18,9 +21,9 @@ interface Trainer {
 }
 
 const trainers = ref<Trainer[]>([]);
-const isEditDisabled = ref(false);
 
-const isShowForm = ref(false);
+const isShowAddItemForm = ref(false);
+
 const isEditing = ref(false);
 const trainerToEdit = ref<Trainer | null>(null);
 
@@ -44,38 +47,14 @@ const handleAddTrainer = async (newItem: Trainer) => {
   });
 };
 
-const handleEditTrainer = (trainer: Trainer) => {
-  isEditing.value = true;
-  trainerToEdit.value = { ...trainer };
+const { updateItem } = useUpdateItem<Trainer>(trainersEndpoint, trainers, isEditing, trainerToEdit);
+
+const handleUpdateTrainer = async (updatedTrainer: Trainer) => {
+  await updateItem(updatedTrainer);
 };
 
-const updateTrainer = async (updated: Trainer) => {
-  try {
-    isEditDisabled.value = true;
-    const response = await fetch(`${trainersEndpoint}/${updated.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updated),
-    });
-
-    if (!response.ok) {
-      throw new Error('Error updating trainer');
-    }
-
-    const index = trainers.value.findIndex((trainer: Trainer) => trainer.id === updated.id);
-    if (index !== -1) {
-      trainers.value[index] = updated;
-    }
-
-    isEditing.value = false;
-    trainerToEdit.value = null;
-  } catch (error) {
-    console.error('Error updating trainer:', error);
-  } finally {
-    isEditDisabled.value = false;
-  }
+const handleEditTrainer = (trainer: Trainer) => {
+  trainerToEdit.value = { ...trainer };
 };
 
 const handleCancelEdit = () => {
@@ -102,11 +81,11 @@ const handleDeleteTrainer = async (id: string) => {
       h1 Trainers
 
       UiButton.trainers-view__show-form-btn(
-        @click="isShowForm = !isShowForm"
+        @click="isShowAddItemForm = !isShowAddItemForm"
       ) Add New Trainer
 
     AddTrainerForm(
-      v-show="isShowForm"
+      v-show="isShowAddItemForm"
       :max-id="maxId"
       @trainer-added="handleAddTrainer"
     )
@@ -119,16 +98,26 @@ const handleDeleteTrainer = async (id: string) => {
         .trainers-view__name {{ trainer.id }}. {{ trainer.title }}
 
         .trainers-view__actions
-          UiLink.trainers-view__actions-view(title="View Trainer" :to="{ name: 'trainer-detail', params: { id: trainer.id } }") View
+          UiLink.trainers-view__actions-view(
+            title="View Trainer"
+            :to="{ name: 'trainer-detail', params: { id: trainer.id } }"
+          ) View
+
           UiButton(
-            :disabled="isEditDisabled"
+            :disabled="isEditing && trainerToEdit === trainer.id"
             title="Edit Trainer"
             look="edit"
             popovertarget="popover"
             popovertargetaction="toggle"
             @click="handleEditTrainer(trainer)"
           ) Edit
-          UiButton(:disabled="isDeleteDisabled" title="Delete Trainer" look="delete" @click="handleDeleteTrainer(trainer.id)") Delete
+
+          UiButton(
+            :disabled="isDeleteDisabled"
+            title="Delete Trainer"
+            look="delete"
+            @click="handleDeleteTrainer(trainer.id)"
+          ) Delete
 
         UiModal#popover(
           v-if="trainerToEdit && trainerToEdit.id === trainer.id"
@@ -138,8 +127,8 @@ const handleDeleteTrainer = async (id: string) => {
 
           EditTrainerForm(
             :trainer="trainerToEdit"
-            @trainer-updated="updateTrainer"
-            @cancelEdit="handleCancelEdit"
+            @trainer-updated="handleUpdateTrainer"
+            @cancel-edit="handleCancelEdit"
           )
 
 </template>
@@ -218,6 +207,11 @@ const handleDeleteTrainer = async (id: string) => {
       background-color: var(--info-color-hover);
       color: var(--white-color);
     }
+  }
+
+  &__modal-title {
+    color: var(--text-color);
+    margin-bottom: 16px;
   }
 }
 </style>

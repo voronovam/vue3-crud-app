@@ -19,6 +19,11 @@
       "id": "1005",
       "title": "World Class",
       "schedules_id": 10005
+    },
+    {
+      "id": "1008",
+      "title": "new club",
+      "schedules_id": 10008
     }
   ],
   "trainers": [
@@ -38,7 +43,7 @@
     },
     {
       "id": "4",
-      "title": "new trainer"
+      "title": "new trainer "
     }
   ],
   "areas": [

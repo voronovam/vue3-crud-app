@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref,onMounted } from 'vue';
+
 import { clubsEndpoint } from '@/constants';
 import { useFetchData } from '@/composables/useFetchData';
 import { useCreateItem } from '@/composables/useCreateItem';
+import { useUpdateItem } from '@/composables/useUpdateItem';
 import { useDeleteItem } from '@/composables/useDeleteItem';
+
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
@@ -18,8 +21,9 @@ interface Club {
 }
 
 const clubs = ref<Club[]>([]);
-const isEditDisabled = ref(false);
-const isShowForm = ref(false);
+
+const isShowAddItemForm = ref(false);
+
 const isEditing = ref(false);
 const clubToEdit = ref<Club | null>(null);
 
@@ -44,38 +48,14 @@ const handleAddClub = async (newClub: Club) => {
   });
 };
 
-const handleEditClub = (club: Club) => {
-  isEditing.value = true;
-  clubToEdit.value = { ...club };
+const { updateItem } = useUpdateItem<Club>(clubsEndpoint, clubs, isEditing, clubToEdit);
+
+const handleUpdateClub = async (updatedClub: Club) => {
+  await updateItem(updatedClub);
 };
 
-const updateClub = async (updatedClub: Club) => {
-  try {
-    isEditDisabled.value = true;
-    const response = await fetch(`${clubsEndpoint}/${updatedClub.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedClub),
-    });
-
-    if (!response.ok) {
-      throw new Error('Error updating club');
-    }
-
-    const index = clubs.value.findIndex(club => club.id === updatedClub.id);
-    if (index !== -1) {
-      clubs.value[index] = updatedClub;
-    }
-
-    isEditing.value = false;
-    clubToEdit.value = null;
-  } catch (error) {
-    console.error('Error updating club:', error);
-  } finally {
-    isEditDisabled.value = false;
-  }
+const handleEditClub = (club: Club) => {
+  clubToEdit.value = { ...club };
 };
 
 const handleCancelEdit = () => {
@@ -101,11 +81,11 @@ const handleDeleteClub = async (id: string) => {
       h1 Clubs
 
       UiButton.clubs-view__show-form-btn(
-        @click="isShowForm = !isShowForm"
+        @click="isShowAddItemForm = !isShowAddItemForm"
       ) Add New Club
 
     AddClubForm(
-      v-show="isShowForm"
+      v-show="isShowAddItemForm"
       :max-id="maxId"
       :maxSchedulesId="maxSchedulesId"
       @clubAdded="handleAddClub"
@@ -125,7 +105,7 @@ const handleDeleteClub = async (id: string) => {
           ) View
 
           UiButton(
-            :disabled="isEditDisabled"
+            :disabled="isEditing && clubToEdit === club.id"
             title="Edit Club"
             look="edit"
             popovertarget="popover"
@@ -148,8 +128,8 @@ const handleDeleteClub = async (id: string) => {
 
           EditClubForm(
             :club="clubToEdit"
-            @clubUpdated="updateClub"
-            @cancelEdit="handleCancelEdit"
+            @club-updated="handleUpdateClub"
+            @cancel-edit="handleCancelEdit"
           )
 
 </template>

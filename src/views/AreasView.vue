@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref,onMounted } from 'vue';
+
 import { areasEndpoint } from '@/constants';
 import { useFetchData } from '@/composables/useFetchData';
 import { useCreateItem } from '@/composables/useCreateItem';
+import { useUpdateItem } from '@/composables/useUpdateItem';
 import { useDeleteItem } from '@/composables/useDeleteItem';
+
 import UiButton from '@/components/ui/Button.vue'
 import UiLink from '@/components/ui/Link.vue'
 import Spinner from '@/components/Spinner.vue';
@@ -18,9 +21,9 @@ export interface Area {
 }
 
 const areas = ref<Area[]>([]);
-const isEditDisabled = ref(false);
 
-const isShowForm = ref(false);
+const isShowAddItemForm = ref(false);
+
 const isEditing = ref(false);
 const areaToEdit = ref<Area | null>(null);
 
@@ -44,38 +47,14 @@ const handleAddArea = async (newItem: Area) => {
   });
 };
 
-const handleEditArea = (area: Area) => {
-  isEditing.value = true;
-  areaToEdit.value = { ...area };
+const { updateItem } = useUpdateItem<Area>(areasEndpoint, areas, isEditing, areaToEdit);
+
+const handleUpdateArea = async (updatedArea: Area) => {
+  await updateItem(updatedArea);
 };
 
-const updateArea = async (updatedArea: Area) => {
-  try {
-    isEditDisabled.value = true;
-    const response = await fetch(`${areasEndpoint}/${updatedArea.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedArea),
-    });
-
-    if (!response.ok) {
-      throw new Error('Error updating area');
-    }
-
-    const index = areas.value.findIndex(area => area.id === updatedArea.id);
-    if (index !== -1) {
-      areas.value[index] = updatedArea;
-    }
-
-    isEditing.value = false;
-    areaToEdit.value = null;
-  } catch (error) {
-    console.error('Error updating area:', error);
-  } finally {
-    isEditDisabled.value = false;
-  }
+const handleEditArea = (area: Area) => {
+  areaToEdit.value = { ...area };
 };
 
 const handleCancelEdit = () => {
@@ -102,11 +81,11 @@ const handleDeleteArea = async (id: string) => {
       h1 Areas
 
       UiButton.areas-view__show-form-btn(
-        @click="isShowForm = !isShowForm"
+        @click="isShowAddItemForm = !isShowAddItemForm"
       ) Add New Area
 
     AddAreaForm(
-      v-show="isShowForm"
+      v-show="isShowAddItemForm"
       :max-id="maxId"
       @area-added="handleAddArea"
     )
@@ -125,7 +104,7 @@ const handleDeleteArea = async (id: string) => {
           ) View
 
           UiButton(
-            :disabled="isEditDisabled"
+            :disabled="isEditing && areaToEdit === area.id"
             title="Edit Area"
             look="edit"
             popovertarget="popover"
@@ -148,8 +127,8 @@ const handleDeleteArea = async (id: string) => {
 
           EditAreaForm(
             :area="areaToEdit"
-            @area-updated="updateArea"
-            @cancelEdit="handleCancelEdit"
+            @area-updated="handleUpdateArea"
+            @cancel-edit="handleCancelEdit"
           )
 
 </template>
